@@ -102,7 +102,7 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
             <span className="text-xl">⛪</span>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white leading-tight">라이브 소통방</h2>
+            <h2 className="text-lg font-bold text-white leading-tight">💒 실시간 소통방(v2)</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Live Now</p>
@@ -298,10 +298,10 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-3 bg-white/5 text-neutral-400 hover:text-indigo-400 rounded-2xl border border-white/10 transition-all hover:bg-indigo-500/10 hover:border-indigo-500/20 group/upload"
+            className="p-3 bg-indigo-500 text-white hover:bg-indigo-400 rounded-2xl border border-indigo-400/50 transition-all hover:scale-110 active:scale-95 group/upload shadow-[0_0_20px_rgba(99,102,241,0.4)]"
             title="사진 보내기"
           >
-            <ImageIcon className="w-6 h-6 group-hover/upload:scale-110 transition-transform" />
+            <ImageIcon className="w-6 h-6" />
           </button>
 
           <div className="flex-1 relative group">
