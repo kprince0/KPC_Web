@@ -2,7 +2,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 
 // Pointing to a reliable CDN for the worker bundle
 // This avoids heavy Next.js build configuration issues regarding PDF.js worker files.
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 /**
  * Reads a File object (must be PDF), parses it with pdf.js, 
@@ -32,7 +32,8 @@ export async function extractFirstPageAsImage(file: File): Promise<string> {
   // Render page onto canvas
   await page.render({
     canvasContext: context,
-    viewport: viewport
+    viewport: viewport,
+    canvas: canvas
   }).promise;
   
   // Output as JPEG dataURL string representing the thumbnail image

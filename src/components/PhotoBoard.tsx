@@ -2,16 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import Image from 'next/image';
+import { X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import DeleteButton from './DeleteButton';
 
 interface Photo {
   id: string;
-  url: string; // The webContentLink or API Route Proxy URL
+  url: string;
   alt: string;
+  postId?: string; // DB 레코드 삭제를 위해 필요
 }
 
-export default function PhotoBoard({ photos }: { photos: Photo[] }) {
+export default function PhotoBoard({ photos, isAdmin = false }: { photos: Photo[], isAdmin?: boolean }) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -58,35 +59,46 @@ export default function PhotoBoard({ photos }: { photos: Photo[] }) {
     setSelectedIdx((selectedIdx - 1 + photos.length) % photos.length);
   };
 
-  // Entry GSAP ScrollTrigger could be added for the Masonry Grid items as well
   return (
     <>
-      {/* CSS-based Masonry Layout */}
       <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-4 p-4">
         {photos.map((photo, i) => (
           <div 
             key={photo.id}
-            className="group relative rounded-2xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] break-inside-avoid"
-            onClick={() => setSelectedIdx(i)}
+            className="group relative rounded-2xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] break-inside-avoid shadow-lg"
           >
-            {/* Using standard img or next/image if allowed domains configured */}
             <img 
               src={photo.url} 
               alt={photo.alt} 
               className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
+              onClick={() => setSelectedIdx(i)}
             />
-            {/* Antigravity Glassmorphism Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-              <span className="text-white text-sm font-medium tracking-wide translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                자세히 보기
-              </span>
+            
+            {/* Admin Action: Delete */}
+            {isAdmin && photo.postId && (
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <DeleteButton 
+                  postId={photo.postId} 
+                  tableName="photo_posts" 
+                  redirectPath="/photos" 
+                />
+              </div>
+            )}
+
+            {/* Title Overlay */}
+            <div 
+              className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"
+              onClick={() => setSelectedIdx(i)}
+            >
+              <p className="text-white text-sm font-semibold truncate">{photo.alt}</p>
+              <span className="text-neutral-400 text-[10px] tracking-widest uppercase mt-1 block">Click to Enlarge</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* GSAP Lightbox Overlay */}
+      {/* Lightbox */}
       {selectedIdx !== null && (
         <div 
           ref={lightboxRef}
@@ -101,39 +113,36 @@ export default function PhotoBoard({ photos }: { photos: Photo[] }) {
           </button>
 
           <div className="relative w-full max-w-6xl h-full max-h-[85vh] flex items-center justify-center p-4">
-            
-            {/* Left Nav */}
             <button 
-              className="absolute left-6 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all z-[110] hover:scale-110 active:scale-95 text-white"
+              className="absolute left-6 p-4 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all z-[110] hover:scale-110 active:scale-95 text-white shadow-xl"
               onClick={prevPhoto}
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
 
-            {/* Core Image */}
             <img 
               ref={imageRef}
               src={photos[selectedIdx].url} 
               alt={photos[selectedIdx].alt}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-white/5"
               onClick={(e) => e.stopPropagation()}
             />
 
-            {/* Right Nav */}
             <button 
-              className="absolute right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all z-[110] hover:scale-110 active:scale-95 text-white"
+              className="absolute right-6 p-4 bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-md transition-all z-[110] hover:scale-110 active:scale-95 text-white shadow-xl"
               onClick={nextPhoto}
             >
               <ChevronRight className="w-8 h-8" />
             </button>
-            
           </div>
           
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-white text-sm">
-            {selectedIdx + 1} / {photos.length}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-2 bg-neutral-900/60 border border-white/10 backdrop-blur-md rounded-full text-white text-sm font-medium">
+            <span className="text-indigo-400 mr-2 font-bold">{selectedIdx + 1}</span> / {photos.length}
+            <span className="ml-4 text-neutral-300">{photos[selectedIdx].alt}</span>
           </div>
         </div>
       )}
     </>
   );
 }
+

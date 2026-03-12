@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import gsap from 'gsap';
 import Lenis from 'lenis';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -96,15 +97,21 @@ export default function Home() {
         </p>
         
         <div className="hero-element flex flex-col sm:flex-row gap-5 w-full justify-center">
-          <button className="group relative px-8 py-4 bg-white text-black rounded-full font-semibold transition-all hover:scale-105 overflow-hidden">
+          <Link
+            href="/board"
+            className="group relative px-8 py-4 bg-white text-black rounded-full font-semibold transition-all hover:scale-105 overflow-hidden text-center"
+          >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              게시판 & 채팅방 입장
+              게시판 &amp; 채팅방 입장
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
-          </button>
-          <button className="px-8 py-4 bg-white/5 border border-white/10 text-neutral-200 rounded-full font-medium backdrop-blur-md hover:bg-white/10 hover:text-white transition-colors">
+          </Link>
+          <Link
+            href="/about"
+            className="px-8 py-4 bg-white/5 border border-white/10 text-neutral-200 rounded-full font-medium backdrop-blur-md hover:bg-white/10 hover:text-white transition-colors text-center"
+          >
             새가족 안내
-          </button>
+          </Link>
         </div>
 
       </div>
