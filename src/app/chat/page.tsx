@@ -26,7 +26,7 @@ export default async function ChatPage() {
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">채팅방</h1>
           <p className="text-neutral-400">성도님들과 실시간으로 교제하는 공간입니다.</p>
         </div>
-        <ChatRoom currentUserId={user.id} />
+        <ChatRoom currentUserId={user.id} userRole={userRole} />
       </main>
     </div>
   );

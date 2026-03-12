@@ -1,6 +1,4 @@
-'use client';
-
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
 
 export interface ChatMessage {
@@ -8,9 +6,12 @@ export interface ChatMessage {
   user_id: string;
   message: string;
   created_at: string;
+  is_edited: boolean;
+  is_deleted: boolean;
   profiles: {
     full_name: string;
     role: string;
+    is_chat_blocked?: boolean;
   };
 }
 
@@ -18,24 +19,23 @@ export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
-  const supabase = createBrowserClient(
+  const supabase = useMemo(() => createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  ), []);
 
   // 1. Initial Fetch
   const fetchMessages = useCallback(async () => {
     const { data, error } = await supabase
       .from('chat_messages')
       .select(`
-        id, user_id, message, created_at,
-        profiles (full_name, role)
+        id, user_id, message, created_at, is_edited, is_deleted,
+        profiles (full_name, role, is_chat_blocked)
       `)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(100);
 
     if (!error && data) {
-      // Reverse to show oldest at top, newest at bottom
       setMessages(data.reverse() as unknown as ChatMessage[]);
     }
     setIsLoading(false);
@@ -49,21 +49,29 @@ export function useChat() {
       .channel('public:chat_messages')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        { event: '*', schema: 'public', table: 'chat_messages' },
         async (payload) => {
-          // Fetch the associated profile for the new message
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('full_name, role')
-            .eq('id', payload.new.user_id)
-            .single();
+          if (payload.eventType === 'INSERT') {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('full_name, role, is_chat_blocked')
+              .eq('id', payload.new.user_id)
+              .single();
 
-          const newMessage: ChatMessage = {
-            ...(payload.new as ChatMessage),
-            profiles: profileData || { full_name: 'Unknown', role: 'Guest' }
-          };
-
-          setMessages((prev) => [...prev, newMessage]);
+            const newMessage: ChatMessage = {
+              ...(payload.new as ChatMessage),
+              profiles: profileData || { full_name: 'Unknown', role: 'Guest', is_chat_blocked: false }
+            };
+            setMessages((prev) => [...prev, newMessage]);
+          } 
+          else if (payload.eventType === 'UPDATE') {
+            setMessages((prev) => 
+              prev.map(msg => msg.id === payload.new.id ? { ...msg, ...payload.new } : msg)
+            );
+          } 
+          else if (payload.eventType === 'DELETE') {
+            setMessages((prev) => prev.filter(msg => msg.id !== payload.old.id));
+          }
         }
       )
       .subscribe();
@@ -73,15 +81,25 @@ export function useChat() {
     };
   }, [supabase, fetchMessages]);
 
-  // 3. Send Message
+  // 3. Operations
   const sendMessage = async (message: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-
-    await supabase.from('chat_messages').insert([
-      { user_id: user.id, message }
-    ]);
+    await supabase.from('chat_messages').insert([{ user_id: user.id, message }]);
   };
 
-  return { messages, sendMessage, isLoading };
+  const updateMessage = async (id: string, message: string) => {
+    await supabase.from('chat_messages').update({ message, is_edited: true }).eq('id', id);
+  };
+
+  const deleteMessage = async (id: string) => {
+    // Soft delete recommended: just flag as deleted, or hard delete
+    await supabase.from('chat_messages').update({ is_deleted: true, message: '삭제된 메시지입니다.' }).eq('id', id);
+  };
+
+  const manageUserChat = async (userId: string, blocked: boolean) => {
+    await supabase.from('profiles').update({ is_chat_blocked: blocked }).eq('id', userId);
+  };
+
+  return { messages, sendMessage, updateMessage, deleteMessage, manageUserChat, isLoading };
 }
