@@ -45,24 +45,39 @@ export function useChat() {
   useEffect(() => {
     fetchMessages();
 
+    console.log('--- Chat Realtime Subscription Start ---');
     const channel = supabase
       .channel('public:chat_messages')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'chat_messages' },
         async (payload) => {
-          if (payload.eventType === 'INSERT') {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('full_name, role, is_chat_blocked')
-              .eq('id', payload.new.user_id)
-              .single();
+          console.log('Received Realtime Event:', payload.eventType, payload);
 
-            const newMessage: ChatMessage = {
-              ...(payload.new as ChatMessage),
-              profiles: profileData || { full_name: 'Unknown', role: 'Guest', is_chat_blocked: false }
-            };
-            setMessages((prev) => [...prev, newMessage]);
+          if (payload.eventType === 'INSERT') {
+            try {
+              // Fetch the associated profile for the new message
+              const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('full_name, role, is_chat_blocked')
+                .eq('id', payload.new.user_id)
+                .single();
+
+              if (profileError) console.warn('Profile fetch error:', profileError);
+
+              const newMessage: ChatMessage = {
+                ...(payload.new as ChatMessage),
+                profiles: profileData || { full_name: 'Unknown', role: 'Guest', is_chat_blocked: false }
+              };
+              setMessages((prev) => [...prev, newMessage]);
+            } catch (err) {
+              console.error('Error handling new message:', err);
+              // Fallback without profile
+              setMessages((prev) => [...prev, { 
+                ...(payload.new as ChatMessage), 
+                profiles: { full_name: 'Someone', role: 'Member', is_chat_blocked: false }
+              }]);
+            }
           } 
           else if (payload.eventType === 'UPDATE') {
             setMessages((prev) => 
@@ -74,9 +89,12 @@ export function useChat() {
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime Channel Status:', status);
+      });
 
     return () => {
+      console.log('--- Chat Realtime Subscription Cleaned ---');
       supabase.removeChannel(channel);
     };
   }, [supabase, fetchMessages]);
