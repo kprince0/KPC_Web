@@ -62,7 +62,7 @@ export default function TestDashboard() {
         <h2 className="text-2xl font-semibold border-b border-white/20 pb-2 mt-16">4. Live Chat Room (Glassmorphism & Realtime Placeholder)</h2>
         {/* Because the SDK requires initialized .env values, we mount it. If env fails, it spins loading forever. */}
         <div className="bg-neutral-900 border border-white/5 rounded-3xl p-8 flex items-center justify-center">
-            <ChatRoom currentUserId="test-me" />
+            <ChatRoom currentUserId="test-me" userRole="Admin" />
         </div>
       </section>
       
