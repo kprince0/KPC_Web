@@ -298,9 +298,10 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="p-3 bg-white/5 text-neutral-400 hover:text-white rounded-2xl border border-white/10 transition-all hover:bg-white/10"
+            className="p-3 bg-white/5 text-neutral-400 hover:text-indigo-400 rounded-2xl border border-white/10 transition-all hover:bg-indigo-500/10 hover:border-indigo-500/20 group/upload"
+            title="사진 보내기"
           >
-            <Plus className="w-6 h-6" />
+            <ImageIcon className="w-6 h-6 group-hover/upload:scale-110 transition-transform" />
           </button>
 
           <div className="flex-1 relative group">
