@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Server-side OpenAI Initialization
-// Requires OPENAI_API_KEY in .env.local
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(req: Request) {
   try {
+    const apiKey = process.env.OPENAI_API_KEY;
+    
+    if (!apiKey) {
+      console.warn('OPENAI_API_KEY is not set. API will return mock data or error.');
+      return NextResponse.json({ 
+        error: 'OpenAI API key is missing in server environment.' 
+      }, { status: 500 });
+    }
+
+    const openai = new OpenAI({ apiKey });
     const { base64Image } = await req.json();
 
     if (!base64Image) {
