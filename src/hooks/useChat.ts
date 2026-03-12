@@ -5,6 +5,7 @@ export interface ChatMessage {
   id: string;
   user_id: string;
   message: string;
+  image_url?: string;
   created_at: string;
   is_edited: boolean;
   is_deleted: boolean;
@@ -29,7 +30,7 @@ export function useChat() {
     const { data, error } = await supabase
       .from('chat_messages')
       .select(`
-        id, user_id, message, created_at, is_edited, is_deleted,
+        id, user_id, message, image_url, created_at, is_edited, is_deleted,
         profiles (full_name, role, is_chat_blocked)
       `)
       .order('created_at', { ascending: false })
@@ -56,7 +57,6 @@ export function useChat() {
 
           if (payload.eventType === 'INSERT') {
             try {
-              // Fetch the associated profile for the new message
               const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('full_name, role, is_chat_blocked')
@@ -72,7 +72,6 @@ export function useChat() {
               setMessages((prev) => [...prev, newMessage]);
             } catch (err) {
               console.error('Error handling new message:', err);
-              // Fallback without profile
               setMessages((prev) => [...prev, { 
                 ...(payload.new as ChatMessage), 
                 profiles: { full_name: 'Someone', role: 'Member', is_chat_blocked: false }
@@ -100,10 +99,28 @@ export function useChat() {
   }, [supabase, fetchMessages]);
 
   // 3. Operations
-  const sendMessage = async (message: string) => {
+  const uploadImage = async (file: File) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random()}.${fileExt}`;
+    const filePath = `chat/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('chat_images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('chat_images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const sendMessage = async (message: string, imageUrl?: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    await supabase.from('chat_messages').insert([{ user_id: user.id, message }]);
+    await supabase.from('chat_messages').insert([{ user_id: user.id, message, image_url: imageUrl }]);
   };
 
   const updateMessage = async (id: string, message: string) => {
@@ -111,7 +128,6 @@ export function useChat() {
   };
 
   const deleteMessage = async (id: string) => {
-    // Soft delete recommended: just flag as deleted, or hard delete
     await supabase.from('chat_messages').update({ is_deleted: true, message: '삭제된 메시지입니다.' }).eq('id', id);
   };
 
@@ -119,5 +135,5 @@ export function useChat() {
     await supabase.from('profiles').update({ is_chat_blocked: blocked }).eq('id', userId);
   };
 
-  return { messages, sendMessage, updateMessage, deleteMessage, manageUserChat, isLoading };
+  return { messages, sendMessage, uploadImage, updateMessage, deleteMessage, manageUserChat, isLoading };
 }

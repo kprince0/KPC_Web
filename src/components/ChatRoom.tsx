@@ -2,20 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useChat, ChatMessage } from '@/hooks/useChat';
-import { Send, Loader2, MoreVertical, Trash2, Edit2, ShieldAlert, UserPlus, UserMinus, X } from 'lucide-react';
+import { Send, Loader2, MoreVertical, Trash2, Edit2, ShieldAlert, UserPlus, UserMinus, X, Image as ImageIcon, Plus } from 'lucide-react';
 import { format, isSameDay } from 'date-fns';
 import gsap from 'gsap';
 
 const ADMIN_ROLES = ['Pastor', 'Elder', 'MediaTeam', 'Deacon', 'Admin'];
 
 export default function ChatRoom({ currentUserId, userRole }: { currentUserId: string, userRole: string }) {
-  const { messages, sendMessage, updateMessage, deleteMessage, manageUserChat, isLoading } = useChat();
+  const { messages, sendMessage, uploadImage, updateMessage, deleteMessage, manageUserChat, isLoading } = useChat();
   const [input, setInput] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editInput, setEditInput] = useState('');
   const [showMemberAction, setShowMemberAction] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  
   const scrollRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isAdmin = ADMIN_ROLES.includes(userRole);
 
@@ -26,22 +31,44 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
     }
   }, [messages]);
 
-  // Entrance Animation
-  useEffect(() => {
-    if (!isLoading && containerRef.current) {
-      gsap.fromTo(containerRef.current,
-        { opacity: 0, scale: 0.98 },
-        { opacity: 1, scale: 1, duration: 0.6, ease: 'power2.out' }
-      );
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
     }
-  }, [isLoading]);
+  };
+
+  const clearFile = () => {
+    setSelectedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    const msg = input.trim();
-    setInput('');
-    await sendMessage(msg);
+    if (!input.trim() && !selectedFile) return;
+
+    setIsUploading(true);
+    let imageUrl = '';
+    
+    try {
+      if (selectedFile) {
+        imageUrl = await uploadImage(selectedFile);
+      }
+      
+      const msg = input.trim();
+      setInput('');
+      clearFile();
+      await sendMessage(msg, imageUrl);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      alert('메시지 전송에 실패했습니다.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const startEdit = (msg: ChatMessage) => {
@@ -128,7 +155,7 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
                     </div>
                   )}
 
-                  <div className="relative group/bubble flex items-end gap-2">
+                  <div className="relative group/bubble flex items-end gap-2 text-[#e5e5e5]">
                     {/* Timestamp for Me */}
                     {isMe && !msg.is_deleted && (
                       <span className="text-[9px] text-neutral-600 mb-1 font-medium italic">
@@ -138,32 +165,41 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
 
                     {/* Bubble */}
                     <div className={`
-                      group relative px-4 py-3 rounded-2xl text-[14px] leading-relaxed shadow-lg transition-all
+                      group relative overflow-hidden transition-all
                       ${msg.is_deleted 
-                        ? 'bg-neutral-800/30 text-neutral-600 border border-white/5 italic italic' 
+                        ? 'px-4 py-3 rounded-2xl bg-neutral-800/30 text-neutral-600 border border-white/5 italic' 
                         : isMe 
-                          ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white border border-indigo-500/50 rounded-tr-sm' 
-                          : 'bg-neutral-800 text-neutral-100 border border-white/10 rounded-tl-sm hover:bg-neutral-750'}
+                          ? 'bg-gradient-to-br from-indigo-600 to-indigo-700 text-white border border-indigo-500/50 rounded-2xl rounded-tr-sm' 
+                          : 'bg-neutral-800 text-neutral-100 border border-white/10 rounded-2xl rounded-tl-sm hover:bg-neutral-750'}
                     `}>
-                      {editingId === msg.id ? (
-                        <div className="flex flex-col gap-2 min-w-[200px]">
-                          <textarea
-                            value={editInput}
-                            onChange={(e) => setEditInput(e.target.value)}
-                            className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
-                            autoFocus
-                          />
-                          <div className="flex justify-end gap-2">
-                            <button onClick={() => setEditingId(null)} className="text-[10px] text-neutral-400 hover:text-white">취소</button>
-                            <button onClick={handleUpdate} className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold">완료</button>
+                      {/* Message Content */}
+                      <div className={msg.image_url ? '' : 'px-4 py-3'}>
+                        {msg.image_url && (
+                          <div className="mb-2 max-w-sm rounded-lg overflow-hidden border border-white/5">
+                            <img src={msg.image_url} alt="Chat attachment" className="w-full h-auto object-cover max-h-96" />
                           </div>
-                        </div>
-                      ) : (
-                        <>
-                          {msg.message}
-                          {msg.is_edited && !msg.is_deleted && <span className="text-[9px] opacity-40 ml-2">(수정됨)</span>}
-                        </>
-                      )}
+                        )}
+                        
+                        {editingId === msg.id ? (
+                          <div className="flex flex-col gap-2 min-w-[200px] p-2">
+                            <textarea
+                              value={editInput}
+                              onChange={(e) => setEditInput(e.target.value)}
+                              className="w-full bg-black/40 border border-white/10 rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
+                              autoFocus
+                            />
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => setEditingId(null)} className="text-[10px] text-neutral-400 hover:text-white">취소</button>
+                              <button onClick={handleUpdate} className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold">완료</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className={msg.image_url ? 'px-4 pb-3' : ''}>
+                            {msg.message}
+                            {msg.is_edited && !msg.is_deleted && <span className="text-[9px] opacity-40 ml-2">(수정됨)</span>}
+                          </div>
+                        )}
+                      </div>
 
                       {/* Actions Tooltip (Hover) */}
                       {!msg.is_deleted && !editingId && (
@@ -238,22 +274,51 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
 
       {/* Input Area */}
       <div className="p-6 bg-neutral-950/60 border-t border-white/5 backdrop-blur-xl z-20">
-        <form onSubmit={handleSend} className="relative flex items-center gap-3">
+        {/* Preview Area */}
+        {previewUrl && (
+          <div className="mb-4 relative inline-block animate-in slide-in-from-bottom-2 duration-300">
+            <img src={previewUrl} className="w-20 h-20 object-cover rounded-xl border border-white/20" alt="Preview" />
+            <button 
+              onClick={clearFile}
+              className="absolute -top-2 -right-2 p-1 bg-black/80 text-white rounded-full border border-white/20 hover:bg-red-500 transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </div>
+        )}
+
+        <form onSubmit={handleSend} className="flex items-center gap-3">
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleFileChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="p-3 bg-white/5 text-neutral-400 hover:text-white rounded-2xl border border-white/10 transition-all hover:bg-white/10"
+          >
+            <Plus className="w-6 h-6" />
+          </button>
+
           <div className="flex-1 relative group">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="은혜로운 대화를 나누어 보세요..."
-              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-12 py-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all placeholder:text-neutral-600 shadow-inner"
+              placeholder={isUploading ? "전송 중..." : "은혜로운 대화를 나누어 보세요..."}
+              disabled={isUploading}
+              className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-12 py-4 text-sm text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 transition-all placeholder:text-neutral-600 shadow-inner disabled:opacity-50"
             />
             <button
               id="chat-send-btn"
               type="submit"
-              disabled={!input.trim()}
+              disabled={(!input.trim() && !selectedFile) || isUploading}
               className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-indigo-600 text-white rounded-xl disabled:opacity-20 disabled:scale-95 disabled:grayscale transition-all shadow-lg shadow-indigo-600/20 active:scale-90"
             >
-              <Send className="w-5 h-5" />
+              {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
             </button>
           </div>
         </form>
