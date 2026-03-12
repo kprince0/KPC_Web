@@ -2,13 +2,21 @@
 
 import { useState, useRef } from 'react';
 import { createBrowserClient } from '@supabase/ssr';
-import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Loader2, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
+
+interface PhotoItem {
+  id: string;
+  file: File;
+  previewUrl: string;
+  title: string;
+  description: string;
+}
 
 export default function AdminPhotoUpload() {
   const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState('');
+  const [photos, setPhotos] = useState<PhotoItem[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const supabase = createBrowserClient(
@@ -17,58 +25,96 @@ export default function AdminPhotoUpload() {
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    if (photos.length + files.length > 20) {
+      alert('사진은 최대 20장까지만 한꺼번에 올릴 수 있습니다.');
+      return;
     }
+
+    const newPhotos = files.map(file => ({
+      id: Math.random().toString(36).substring(2),
+      file,
+      previewUrl: URL.createObjectURL(file),
+      title: '',
+      description: ''
+    }));
+
+    setPhotos(prev => [...prev, ...newPhotos]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removePhoto = (id: string) => {
+    setPhotos(prev => {
+      const filtered = prev.filter(p => p.id !== id);
+      const removed = prev.find(p => p.id === id);
+      if (removed) URL.revokeObjectURL(removed.previewUrl);
+      return filtered;
+    });
+  };
+
+  const updatePhotoInfo = (id: string, field: 'title' | 'description', value: string) => {
+    setPhotos(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !title.trim()) return;
+    if (photos.length === 0) return;
+
+    // Validation
+    const invalid = photos.some(p => !p.title.trim());
+    if (invalid) {
+      alert('모든 사진의 제목을 입력해 주세요.');
+      return;
+    }
 
     setIsUploading(true);
+    setUploadProgress({ current: 0, total: photos.length });
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('로그인이 필요합니다.');
 
-      // 1. 파일 업로드
-      const fileExt = selectedFile.name.split('.').pop();
-      const fileName = `photos/${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('church-assets')
-        .upload(fileName, selectedFile);
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        setUploadProgress(prev => ({ ...prev, current: i + 1 }));
 
-      if (uploadError) throw uploadError;
+        // 1. Storage 업로드
+        const fileExt = photo.file.name.split('.').pop();
+        const fileName = `photos/${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('church-assets')
+          .upload(fileName, photo.file);
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('church-assets')
-        .getPublicUrl(fileName);
+        if (uploadError) throw uploadError;
 
-      // 2. DB 등록 (photo_posts)
-      // Note: phase3-schema.sql에는 photo_posts와 photo_attachments가 분리되어 있으나, 
-      // 간단한 연동을 위해 photo_posts에 url 컬럼이 있다고 가정하거나 attachments 형식을 따릅니다.
-      // 여기서는 photo_posts에 insert하고 publicUrl을 content나 별도 attachments 컬럼에 넣습니다.
-      const { error: dbError } = await supabase
-        .from('photo_posts')
-        .insert([
-          {
-            title: title.trim(),
-            author_id: user.id,
-            // attachments 형식을 통일하여 사용합니다.
-            attachments: [{ name: selectedFile.name, url: publicUrl, type: selectedFile.type }]
-          }
-        ]);
+        const { data: { publicUrl } } = supabase.storage
+          .from('church-assets')
+          .getPublicUrl(fileName);
 
-      if (dbError) throw dbError;
+        // 2. DB 등록 (photo_posts)
+        const { error: dbError } = await supabase
+          .from('photo_posts')
+          .insert([
+            {
+              title: photo.title.trim(),
+              content: photo.description.trim(),
+              author_id: user.id,
+              attachments: [{ name: photo.file.name, url: publicUrl, type: photo.file.type }]
+            }
+          ]);
 
-      alert('사진이 등록되었습니다.');
+        if (dbError) throw dbError;
+      }
+
+      alert('모든 사진이 성공적으로 등록되었습니다.');
       setIsOpen(false);
-      setTitle('');
-      setSelectedFile(null);
+      setPhotos([]);
       window.location.reload();
     } catch (error) {
-      console.error('Upload failed:', error);
-      alert('업로드에 실패했습니다.');
+      console.error('Batch upload failed:', error);
+      alert('업로드 중 오류가 발생했습니다.');
     } finally {
       setIsUploading(false);
     }
@@ -81,81 +127,148 @@ export default function AdminPhotoUpload() {
         className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-semibold transition-all shadow-lg shadow-indigo-500/20"
       >
         <Upload className="w-4 h-4" />
-        사진 올리기
+        사진 대량 올리기
       </button>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
-      <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="p-6 border-b border-white/10 flex items-center justify-between">
-          <h3 className="text-lg font-bold">사진 업로드</h3>
-          <button onClick={() => setIsOpen(false)} className="text-neutral-400 hover:text-white">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 md:p-6 bg-black/80 backdrop-blur-md">
+      <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-neutral-900/50 backdrop-blur-sm sticky top-0 z-10">
+          <div>
+            <h3 className="text-xl font-bold text-white">사진 대량 업로드</h3>
+            <p className="text-sm text-neutral-400 mt-1">최대 20장까지 한꺼번에 올릴 수 있습니다. ({photos.length}/20)</p>
+          </div>
+          <button 
+            onClick={() => {
+              if (photos.length > 0 && !confirm('작성 중인 내용이 사라집니다. 닫으시겠습니까?')) return;
+              setIsOpen(false);
+            }} 
+            className="p-2 text-neutral-400 hover:text-white hover:bg-white/5 rounded-full transition-colors"
+          >
+            <X className="w-6 h-6" />
           </button>
         </div>
         
-        <div className="p-6 space-y-6">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">제목</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="사진 제목을 입력하세요"
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500/50 transition-all shadow-inner"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">파일 선택</label>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+          {photos.length === 0 ? (
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="group relative cursor-pointer aspect-video rounded-xl border-2 border-dashed border-white/10 flex flex-col items-center justify-center hover:border-indigo-500/50 hover:bg-white/5 transition-all overflow-hidden"
+              className="flex flex-col items-center justify-center aspect-video md:aspect-[21/9] rounded-2xl border-2 border-dashed border-white/10 hover:border-indigo-500/50 hover:bg-white/5 transition-all group cursor-pointer"
             >
-              {selectedFile ? (
-                <>
-                  <img 
-                    src={URL.createObjectURL(selectedFile)} 
-                    alt="Preview" 
-                    className="absolute inset-0 w-full h-full object-cover group-hover:opacity-50 transition-opacity"
-                  />
-                  <div className="relative z-10 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center">
-                    <ImageIcon className="w-8 h-8 text-white mb-2" />
-                    <span className="text-xs text-white font-medium">변경하려면 클릭</span>
+              <div className="p-4 rounded-full bg-white/5 group-hover:bg-indigo-500/10 mb-4 transition-colors">
+                <Plus className="w-10 h-10 text-neutral-500 group-hover:text-indigo-400" />
+              </div>
+              <p className="text-neutral-400 font-medium">클릭하여 사진들을 선택하세요 (최대 20장)</p>
+              <p className="text-neutral-600 text-sm mt-2">JPG, PNG 파일 지원</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {photos.map((photo, index) => (
+                <div key={photo.id} className="group relative bg-black/40 border border-white/5 rounded-2xl p-4 flex flex-col md:flex-row gap-6 animate-in slide-in-from-bottom-4 duration-300" style={{ animationDelay: `${index * 50}ms` }}>
+                  <div className="relative w-full md:w-48 aspect-video rounded-xl overflow-hidden border border-white/10">
+                    <img src={photo.previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                    <button 
+                      onClick={() => removePhoto(photo.id)}
+                      className="absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-red-500 text-white rounded-lg backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/60 rounded text-[10px] font-bold text-white/70 backdrop-blur-md">
+                      #{index + 1}
+                    </div>
                   </div>
-                </>
-              ) : (
-                <>
-                  <ImageIcon className="w-8 h-8 text-neutral-500 group-hover:text-indigo-400 mb-2 transition-colors" />
-                  <span className="text-sm text-neutral-500 group-hover:text-neutral-300 transition-colors">클릭하여 사진 선택</span>
-                </>
+                  
+                  <div className="flex-1 space-y-4">
+                    <div>
+                      <input
+                        type="text"
+                        value={photo.title}
+                        onChange={(e) => updatePhotoInfo(photo.id, 'title', e.target.value)}
+                        placeholder="사진 제목을 입력하세요 (필수)"
+                        className="w-full bg-transparent text-lg font-bold text-white placeholder:text-neutral-600 focus:outline-none border-b border-white/5 focus:border-indigo-500 transition-colors py-1"
+                      />
+                    </div>
+                    <div>
+                      <textarea
+                        value={photo.description}
+                        onChange={(e) => updatePhotoInfo(photo.id, 'description', e.target.value)}
+                        placeholder="사진에 대한 설명을 적어주세요 (선택)"
+                        rows={2}
+                        className="w-full bg-transparent text-sm text-neutral-400 placeholder:text-neutral-600 focus:outline-none resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {photos.length < 20 && (
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full py-6 rounded-2xl border-2 border-dashed border-white/5 hover:border-white/10 hover:bg-white/5 flex items-center justify-center gap-2 text-neutral-500 hover:text-neutral-400 transition-all font-medium"
+                >
+                  <Plus className="w-5 h-5" />
+                  사진 더 보태기
+                </button>
               )}
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
+          )}
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
 
-          <button
-            onClick={handleUpload}
-            disabled={isUploading || !selectedFile || !title.trim()}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                업로드 중...
-              </>
-            ) : (
-              '등록 완료'
-            )}
-          </button>
+        <div className="p-6 border-t border-white/10 bg-neutral-900/50 backdrop-blur-sm">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex-1 w-full">
+              {isUploading && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs font-bold text-indigo-400 uppercase tracking-wider">
+                    <span>처리 중...</span>
+                    <span>{uploadProgress.current} / {uploadProgress.total}</span>
+                  </div>
+                  <div className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                    <div 
+                      className="h-full bg-indigo-500 transition-all duration-300 shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
+                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 w-full md:w-auto">
+              <button
+                onClick={() => setIsOpen(false)}
+                className="flex-1 md:flex-none px-6 py-4 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-all text-sm"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleUpload}
+                disabled={isUploading || photos.length === 0}
+                className="flex-[2] md:flex-none px-10 py-4 bg-indigo-600 hover:bg-indigo-500 disabled:bg-neutral-800 disabled:text-neutral-500 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 text-sm"
+              >
+                {isUploading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    올리는 중...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    {photos.length}장의 사진 등록하기
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

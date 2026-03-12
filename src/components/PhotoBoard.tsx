@@ -9,6 +9,7 @@ interface Photo {
   id: string;
   url: string;
   alt: string;
+  description?: string;
   postId?: string; // DB 레코드 삭제를 위해 필요
 }
 
@@ -136,9 +137,16 @@ export default function PhotoBoard({ photos, isAdmin = false }: { photos: Photo[
             </button>
           </div>
           
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-6 py-2 bg-neutral-900/60 border border-white/10 backdrop-blur-md rounded-full text-white text-sm font-medium">
-            <span className="text-indigo-400 mr-2 font-bold">{selectedIdx + 1}</span> / {photos.length}
-            <span className="ml-4 text-neutral-300">{photos[selectedIdx].alt}</span>
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-8 py-4 bg-neutral-900/60 border border-white/10 backdrop-blur-md rounded-2xl text-white max-w-lg w-[calc(100%-2rem)] md:w-auto shadow-2xl animate-in slide-in-from-bottom-4 duration-300">
+            <div className="flex items-center gap-3 mb-1">
+              <span className="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded tracking-wider">{selectedIdx + 1} / {photos.length}</span>
+              <h4 className="text-lg font-bold truncate">{photos[selectedIdx].alt}</h4>
+            </div>
+            {photos[selectedIdx].description && (
+              <p className="text-sm text-neutral-300 leading-relaxed line-clamp-3 md:line-clamp-none">
+                {photos[selectedIdx].description}
+              </p>
+            )}
           </div>
         </div>
       )}

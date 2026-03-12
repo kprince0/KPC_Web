@@ -35,6 +35,7 @@ export default async function PhotosPage() {
       postId: post.id,
       url: att.url,
       alt: post.title || 'Church Photo',
+      description: post.content || '',
     }));
   });
 
