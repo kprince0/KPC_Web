@@ -27,6 +27,9 @@ export function useChat() {
 
   // 1. Initial Fetch
   const fetchMessages = useCallback(async () => {
+    console.log('--- Fetching Chat Messages (Last 100) ---');
+    setIsLoading(true);
+    
     const { data, error } = await supabase
       .from('chat_messages')
       .select(`
@@ -36,8 +39,17 @@ export function useChat() {
       .order('created_at', { ascending: false })
       .limit(100);
 
-    if (!error && data) {
-      setMessages(data.reverse() as unknown as ChatMessage[]);
+    if (error) {
+      console.error('Error fetching chat messages:', error);
+    } else if (data) {
+      console.log(`Fetched ${data.length} messages successfully.`);
+      // Ensure data is typed correctly and has fallback for profiles
+      const formattedData: ChatMessage[] = data.map(item => ({
+        ...item,
+        profiles: item.profiles || { full_name: '알 수 없음', role: 'Guest', is_chat_blocked: false }
+      })) as unknown as ChatMessage[];
+      
+      setMessages(formattedData.reverse());
     }
     setIsLoading(false);
   }, [supabase]);
