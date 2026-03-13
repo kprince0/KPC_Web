@@ -1,4 +1,3 @@
-import Navbar from '@/components/Navbar';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -35,8 +34,8 @@ export default async function MyPage() {
   const roleColor = roleColors[userRole] || roleColors['Guest'];
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-indigo-500/30 overflow-x-hidden w-full">
-      <main className="pt-32 pb-24 px-6 max-w-2xl mx-auto min-h-screen">
+    <div className="bg-neutral-950 text-white font-sans selection:bg-indigo-500/30 overflow-x-hidden w-full">
+      <main className="pt-32 pb-24 px-6 max-w-4xl mx-auto min-h-screen">
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">마이페이지</h1>
           <p className="text-neutral-400">내 계정 정보를 확인하세요.</p>

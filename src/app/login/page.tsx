@@ -4,7 +4,7 @@ import LoginForm from './LoginForm'
 // 이 페이지는 로그인 폼만 렌더링합니다.
 export default function LoginPage() {
   return (
-    <main className="flex-1 flex items-center justify-center p-6 pt-32">
+    <main className="flex-1 flex items-center justify-center p-6 pt-48">
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold tracking-tight mb-2">환영합니다</h1>

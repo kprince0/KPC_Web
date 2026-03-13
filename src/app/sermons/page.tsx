@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import SermonPlayer from '@/components/SermonPlayer';
+import AdminSermonUpload from '@/components/AdminSermonUpload';
 import Link from 'next/link';
 import { Video } from 'lucide-react';
 
@@ -42,13 +43,7 @@ export default async function SermonsPage() {
           </div>
           
           {isAdmin && (
-            <Link 
-              href="/notice/write"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
-            >
-              <Video className="w-5 h-5" />
-              설교 등록
-            </Link>
+            <AdminSermonUpload />
           )}
         </div>
 

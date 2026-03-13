@@ -59,7 +59,7 @@ export default async function BoardPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
-              설교 게시판
+              자유게시판
             </h1>
             <p className="text-lg text-neutral-400 max-w-2xl leading-relaxed">
               은혜로운 말씀과 소식을 나누는 공간입니다.

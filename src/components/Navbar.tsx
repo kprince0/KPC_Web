@@ -28,7 +28,7 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
   }, [])
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-neutral-950/70 border-b border-white/10 backdrop-blur-md py-4' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-neutral-950/80 border-b border-white/10 backdrop-blur-xl py-4' : 'bg-neutral-950/40 backdrop-blur-md py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="flex-shrink-0 flex items-center gap-2">
           <img 
@@ -42,6 +42,7 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
           <li className="flex-shrink-0"><Link href="/about" className="hover:text-white transition-colors">교회소개</Link></li>
           <li className="flex-shrink-0"><Link href="/sermons" className="hover:text-white transition-colors">설교</Link></li>
           <li className="flex-shrink-0"><Link href="/bulletins" className="hover:text-white transition-colors">주보</Link></li>
+          <li className="flex-shrink-0"><Link href="/board" className="hover:text-white transition-colors">자유게시판</Link></li>
           
           {isLoggedIn && (
             <>

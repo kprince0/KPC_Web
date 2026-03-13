@@ -24,10 +24,19 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
 
   const isAdmin = ADMIN_ROLES.includes(userRole);
 
-  // Auto-scroll to bottom
+  // Auto-scroll to bottom and animate new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      
+      // Animate last message if it's new
+      const lastMessage = scrollRef.current.lastElementChild?.lastElementChild;
+      if (lastMessage) {
+        gsap.fromTo(lastMessage, 
+          { opacity: 0, x: 20 }, 
+          { opacity: 1, x: 0, duration: 0.4, ease: 'back.out(1.7)' }
+        );
+      }
     }
   }, [messages]);
 

@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import Lenis from 'lenis';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -68,7 +68,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main ref={heroRef} className="relative min-h-screen bg-neutral-950 text-white overflow-hidden flex flex-col items-center justify-center">
+    <main ref={heroRef} className="relative min-h-screen bg-neutral-950 text-white overflow-hidden flex flex-col items-center pt-48 pb-24">
       
       {/* Dynamic Glassmorphism Background Shapes */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -79,12 +79,6 @@ export default function Home() {
       {/* Hero Content Section */}
       <div className="relative z-10 w-full max-w-5xl px-6 flex flex-col items-center text-center">
         
-        <div className="hero-element inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-lg">
-          <Sparkles className="w-4 h-4 text-indigo-400" />
-          <span className="text-sm font-medium tracking-wide text-neutral-300">
-            특별하고 안전한 온라인 성전
-          </span>
-        </div>
         
         <h1 className="hero-element text-4xl md:text-6xl font-light tracking-tight mb-8 mt-2">
           사랑과 은혜가 충만한 교회<br className="hidden md:block" />

@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen bg-neutral-950 text-white flex flex-col items-center justify-center p-6 selection:bg-red-500/30">
+    <div className="min-h-screen bg-neutral-950 text-white flex flex-col items-center pt-48 p-6 selection:bg-red-500/30">
       <div className="max-w-md w-full text-center space-y-6">
         <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto border border-red-500/20">
           <svg className="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
