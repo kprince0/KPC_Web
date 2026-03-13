@@ -102,7 +102,7 @@ export default function ChatRoom({ currentUserId, userRole }: { currentUserId: s
             <span className="text-xl">⛪</span>
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white leading-tight">💒 실시간 소통방(v2)</h2>
+            <h2 className="text-lg font-bold text-white leading-tight">💒 잭슨빌 한인 장로교회 (v2)</h2>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <p className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold">Live Now</p>
