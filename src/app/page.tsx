@@ -108,11 +108,11 @@ export default function Home() {
         
         <div className="hero-element flex flex-col sm:flex-row gap-5 w-full justify-center">
           <Link
-            href="/board"
+            href="/sermons"
             className="group relative px-8 py-4 bg-white text-black rounded-full font-semibold transition-all hover:scale-105 overflow-hidden text-center"
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              게시판 &amp; 채팅방 입장
+              설교 &amp; 채팅방 입장
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </Link>

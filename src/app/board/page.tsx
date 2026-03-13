@@ -32,6 +32,8 @@ export default async function BoardPage() {
     if (profile) userRole = profile.role;
   }
 
+  const isAdmin = ['Admin', 'Pastor', 'Elder', 'MediaTeam', 'Deacon'].includes(userRole);
+
   // 게시글 데이터 가져오기 (Supabase 연결)
   const { data: posts } = await supabase
     .from('free_board_posts')
@@ -57,20 +59,22 @@ export default async function BoardPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4">
-              자유게시판
+              설교 게시판
             </h1>
             <p className="text-lg text-neutral-400 max-w-2xl leading-relaxed">
-              교회 성도님들이 일상의 은혜를 나누고 교제하는 공간입니다.
+              은혜로운 말씀과 소식을 나누는 공간입니다.
             </p>
           </div>
           
-          <Link 
-            href="/board/write"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
-          >
-            <PenSquare className="w-5 h-5" />
-            글쓰기
-          </Link>
+          {isAdmin && (
+            <Link 
+              href="/board/write"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-all hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
+            >
+              <PenSquare className="w-5 h-5" />
+              글쓰기
+            </Link>
+          )}
         </div>
 
         {/* Board Content */}

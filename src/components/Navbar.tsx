@@ -36,7 +36,7 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
         
         <ul className="flex items-center gap-4 md:gap-6 text-sm font-medium text-neutral-300 whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <li className="flex-shrink-0"><Link href="/about" className="hover:text-white transition-colors">교회소개</Link></li>
-          <li className="flex-shrink-0"><Link href="/board" className="hover:text-white transition-colors">게시판</Link></li>
+          <li className="flex-shrink-0"><Link href="/sermons" className="hover:text-white transition-colors">설교</Link></li>
           <li className="flex-shrink-0"><Link href="/bulletins" className="hover:text-white transition-colors">주보</Link></li>
           
           {isLoggedIn && (
