@@ -30,8 +30,12 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-neutral-950/70 border-b border-white/10 backdrop-blur-md py-4' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold tracking-tighter text-white flex-shrink-0">
-          CHURCH<span className="text-indigo-400">.</span>
+        <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+          <img 
+            src="https://static.wixstatic.com/media/61d770_4fa2366d7d314c91999da3acaa6551be~mv2.jpg/v1/fill/w_120,h_73,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/NEW%20LOGO%20Only%20no%20Text.jpg" 
+            alt="Jacksonville Korean Presbyterian Church Logo"
+            className="h-10 w-auto object-contain brightness-110"
+          />
         </Link>
         
         <ul className="flex items-center gap-4 md:gap-6 text-sm font-medium text-neutral-300 whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">

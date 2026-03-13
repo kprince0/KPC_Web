@@ -35,7 +35,7 @@ export default async function AboutPage() {
     values_title: "핵심 가치",
     values_desc: "예배 중심, 제자 훈련, 지역 사회 섬김, 다음 세대 양육",
     members_title: "함께하는 분들",
-    members_desc: "담임목사 김재순 외 모든 성도님들이 함께 세워나가는 교회"
+    members_desc: "김강일 담임목사와 모든 성도님들이 함께 세워나가는 교회"
   };
 
   const aboutData = config?.content || defaultAboutData;
