@@ -25,39 +25,52 @@ export function useChat() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   ), []);
 
-  // 1. Initial Fetch
-  const fetchMessages = useCallback(async () => {
-    console.log('--- Fetching Chat Messages (Last 100) ---');
-    setIsLoading(true);
+  // 1. Initial Fetch (Run exactly once on mount)
+  useEffect(() => {
+    let mounted = true;
     
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .select(`
-        id, user_id, message, image_url, created_at, is_edited, is_deleted,
-        profiles (full_name, role, is_chat_blocked)
-      `)
-      .order('created_at', { ascending: false })
-      .limit(100);
-
-    if (error) {
-      console.error('Error fetching chat messages:', error);
-    } else if (data) {
-      console.log(`Fetched ${data.length} messages successfully.`);
-      // Ensure data is typed correctly and has fallback for profiles
-      const formattedData: ChatMessage[] = data.map(item => ({
-        ...item,
-        profiles: item.profiles || { full_name: '알 수 없음', role: 'Guest', is_chat_blocked: false }
-      })) as unknown as ChatMessage[];
+    const fetchMessages = async () => {
+      console.log('--- Fetching Chat Messages (Last 100) ---');
+      setIsLoading(true);
       
-      setMessages(formattedData.reverse());
-    }
-    setIsLoading(false);
+      // CRITICAL FIX: Ensure the session is ready before fetching. 
+      // Next.js App Router might take a split second to hydrate the cookie into the client auth state.
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.warn("No user session found. Waiting for auth state change or skipping fetch.");
+        if (mounted) setIsLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select(`
+          id, user_id, message, image_url, created_at, is_edited, is_deleted,
+          profiles (full_name, role, is_chat_blocked)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) {
+        console.error('Error fetching chat messages:', error);
+      } else if (data && mounted) {
+        console.log(`Fetched ${data.length} messages successfully.`);
+        const formattedData: ChatMessage[] = data.map(item => ({
+          ...item,
+          profiles: item.profiles || { full_name: '알 수 없음', role: 'Guest', is_chat_blocked: false }
+        })) as unknown as ChatMessage[];
+        
+        setMessages(formattedData.reverse());
+      }
+      if (mounted) setIsLoading(false);
+    };
+
+    fetchMessages();
+    return () => { mounted = false; };
   }, [supabase]);
 
-  // 2. Realtime Subscription
+  // 2. Realtime Subscription (Run exactly once on mount)
   useEffect(() => {
-    fetchMessages();
-
     console.log('--- Chat Realtime Subscription Start ---');
     const channel = supabase
       .channel('public:chat_messages')
@@ -108,7 +121,7 @@ export function useChat() {
       console.log('--- Chat Realtime Subscription Cleaned ---');
       supabase.removeChannel(channel);
     };
-  }, [supabase, fetchMessages]);
+  }, [supabase]);
 
   // 3. Operations
   const uploadImage = async (file: File) => {
