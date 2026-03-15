@@ -79,19 +79,22 @@ export default function AdminPhotoUpload() {
         const photo = photos[i];
         setUploadProgress(prev => ({ ...prev, current: i + 1 }));
 
-        // 1. Storage 업로드
-        const fileExt = photo.file.name.split('.').pop();
-        const fileName = `photos/${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('church-assets')
-          .upload(fileName, photo.file);
+        // 1. Google Drive 업로드
+        const formData = new FormData();
+        formData.append('file', photo.file);
 
-        if (uploadError) throw uploadError;
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('church-assets')
-          .getPublicUrl(fileName);
+        if (!uploadRes.ok) {
+          const errData = await uploadRes.json();
+          throw new Error(errData.error || 'Upload to Google Drive failed');
+        }
+
+        const uploadData = await uploadRes.json();
+        const proxyUrl = `/api/drive/${uploadData.fileId}`;
 
         // 2. DB 등록 (photo_posts)
         const { error: dbError } = await supabase
@@ -101,7 +104,7 @@ export default function AdminPhotoUpload() {
               title: photo.title.trim(),
               content: photo.description.trim(),
               author_id: user.id,
-              attachments: [{ name: photo.file.name, url: publicUrl, type: photo.file.type }]
+              attachments: [{ name: photo.file.name, url: proxyUrl, driveFileId: uploadData.fileId, type: photo.file.type }]
             }
           ]);
 

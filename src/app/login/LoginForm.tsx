@@ -25,40 +25,54 @@ export default function LoginForm() {
     try {
       if (isLogin) {
         // 로그인 처리
+        console.log("Attempting login with", email);
         const { data: authData, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
+        
+        console.log("Auth response:", { data: authData, error });
+
         if (error) {
           if (error.message.includes('Invalid login credentials')) {
             throw new Error('이메일이나 비밀번호가 일치하지 않습니다.')
+          }
+          if (error.message.includes('Email not confirmed')) {
+             throw new Error('이메일 인증이 필요합니다. 메일함을 확인해주세요.')
           }
           throw error
         }
 
         // [Self-healing] 프로필 누락 확인 및 자동 생성
         if (authData.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', authData.user.id)
-            .single();
-            
-          if (!profile) {
-            console.log('Profile missing for existing user, creating one...');
-            await supabase
+          console.log("Login successful, checking profile...");
+          // We don't want a profile check to prevent login, so wrap in try-catch
+          try {
+            const { data: profile } = await supabase
               .from('profiles')
-              .upsert([
-                {
-                  id: authData.user.id,
-                  email: authData.user.email,
-                  full_name: authData.user.user_metadata?.full_name || email.split('@')[0],
-                  role: 'Member(Pending)',
-                }
-              ]);
+              .select('id')
+              .eq('id', authData.user.id)
+              .single();
+              
+            if (!profile) {
+              console.log('Profile missing for existing user, creating one...');
+              await supabase
+                .from('profiles')
+                .upsert([
+                  {
+                    id: authData.user.id,
+                    email: authData.user.email,
+                    full_name: authData.user.user_metadata?.full_name || email.split('@')[0],
+                    role: 'Member(Pending)',
+                  }
+                ]);
+            }
+          } catch (profileErr) {
+             console.error("Profile check failed but proceeding:", profileErr);
           }
         }
 
+        console.log("Redirecting to home...");
         window.location.href = '/'
       } else {
         // 회원가입 처리
@@ -69,12 +83,17 @@ export default function LoginForm() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            data: {
+              full_name: name.trim(),
+            }
+          }
         })
 
         if (error) throw error
 
         if (data.user) {
-          // profiles 테이블에 이름 저장 (업서트)
+          // profiles 테이블에 이름 저장 (RLS상 거부될 수 있으나 트리거가 작동하므로 에러 무시)
           const { error: profileError } = await supabase
             .from('profiles')
             .upsert([
@@ -87,7 +106,7 @@ export default function LoginForm() {
             ])
             
           if (profileError) {
-             console.error('Profile creation error:', profileError)
+             console.log('Profile creation error (safe to ignore if db trigger is active):', profileError.message)
           }
 
           setSuccessMsg('가입이 성공적으로 완료되었습니다! 이제 로그인해 주세요.')

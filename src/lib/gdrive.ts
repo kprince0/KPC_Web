@@ -11,16 +11,14 @@ import { Readable } from 'stream';
  */
 
 const getAuth = () => {
-  const credentials = {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    // Fix escaped newlines in Vercel/Next format
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-  };
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const refreshToken = process.env.GOOGLE_REFRESH_TOKEN;
 
-  return new google.auth.GoogleAuth({
-    credentials,
-    scopes: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'],
-  });
+  const auth = new google.auth.OAuth2(clientId, clientSecret);
+  auth.setCredentials({ refresh_token: refreshToken });
+
+  return auth;
 };
 
 export async function uploadToDrive(fileName: string, mimeType: string, buffer: Buffer) {
@@ -62,9 +60,9 @@ export async function uploadToDrive(fileName: string, mimeType: string, buffer: 
     });
 
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error uploading to Drive:', error);
-    throw new Error('Drive Upload Failed');
+    throw new Error('Drive Upload Failed: ' + error.message);
   }
 }
 

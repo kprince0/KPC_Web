@@ -26,6 +26,17 @@ export default async function RootLayout({
         getAll() {
           return cookieStore.getAll();
         },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
       },
     }
   );
@@ -33,15 +44,23 @@ export default async function RootLayout({
   let userRole = 'Guest';
 
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    console.log('--- LAYOUT AUTH CHECK ---');
+    console.log('User:', user ? user.email : 'No user', 'Error:', userError);
 
     if (user) {
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single();
-      if (profile) userRole = profile.role;
+      
+      console.log('Profile:', profile, 'Profile Error:', profileError);
+
+      if (profile) {
+        userRole = profile.role;
+      }
     }
   } catch (e) {
     // Supabase 오류 시 Guest로 폴백 (앱 크래시 방지)

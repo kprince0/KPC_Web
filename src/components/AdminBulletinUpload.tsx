@@ -72,32 +72,42 @@ export default function AdminBulletinUpload() {
         thumbnailBlob = await res.blob();
       }
 
-      // 2. 파일 업로드 (PDF)
-      const fileName = `bulletins/${Date.now()}-${selectedFile.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from('church-assets')
-        .upload(fileName, selectedFile);
+      // 2. 파일 업로드 (PDF) - Google Drive 연동
+      const pdfFormData = new FormData();
+      pdfFormData.append('file', selectedFile);
 
-      if (uploadError) throw new Error(`파일 저장소 업로드 실패: ${uploadError.message}`);
+      const pdfUploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: pdfFormData,
+      });
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('church-assets')
-        .getPublicUrl(fileName);
-
-      // 3. 썸네일 업로드
-      const thumbExt = isActuallyImage ? customThumbnail?.name.split('.').pop() : 'jpg';
-      const thumbFileName = `bulletins/thumbnails/${Date.now()}-thumb.${thumbExt}`;
-      const { error: thumbError } = await supabase.storage
-        .from('church-assets')
-        .upload(thumbFileName, thumbnailBlob, { contentType: isActuallyImage ? customThumbnail?.type : 'image/jpeg' });
-
-      if (thumbError) {
-        console.warn('Thumbnail upload failed, but proceeding with PDF:', thumbError);
+      if (!pdfUploadRes.ok) {
+        const errData = await pdfUploadRes.json();
+        throw new Error(errData.error || 'PDF Google Drive 업로드 실패');
       }
 
-      const { data: { publicUrl: thumbnailUrl } } = supabase.storage
-        .from('church-assets')
-        .getPublicUrl(thumbFileName);
+      const pdfData = await pdfUploadRes.json();
+      const publicUrl = `/api/drive/${pdfData.fileId}`;
+
+      // 3. 썸네일 업로드 - Google Drive 연동
+      const thumbExt = isActuallyImage ? customThumbnail?.name.split('.').pop() : 'jpg';
+      const thumbFileName = `thumb-${Date.now()}.${thumbExt}`;
+      
+      const thumbFormData = new FormData();
+      thumbFormData.append('file', thumbnailBlob, thumbFileName);
+
+      const thumbUploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: thumbFormData,
+      });
+
+      let thumbnailUrl: string | null = null;
+      if (!thumbUploadRes.ok) {
+        console.warn('Thumbnail upload failed, but proceeding with PDF');
+      } else {
+        const thumbData = await thumbUploadRes.json();
+        thumbnailUrl = `/api/drive/${thumbData.fileId}`;
+      }
 
       // 4. DB 등록
       const { error: dbError } = await supabase
@@ -106,7 +116,7 @@ export default function AdminBulletinUpload() {
           {
             title: title.trim(),
             file_url: publicUrl,
-            thumbnail_url: thumbError ? null : thumbnailUrl,
+            thumbnail_url: thumbnailUrl,
             bulletin_date: bulletinDate,
             author_id: user.id
           }

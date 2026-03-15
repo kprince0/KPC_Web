@@ -112,21 +112,21 @@ export function useChat() {
 
   // 3. Operations
   const uploadImage = async (file: File) => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `chat/${fileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('chat_images')
-      .upload(filePath, file);
-
-    if (uploadError) throw uploadError;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('chat_images')
-      .getPublicUrl(filePath);
-
-    return publicUrl;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to upload image');
+    }
+    
+    const data = await response.json();
+    return `/api/drive/${data.fileId}`;
   };
 
   const sendMessage = async (message: string, imageUrl?: string) => {
