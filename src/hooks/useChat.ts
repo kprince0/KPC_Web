@@ -25,7 +25,7 @@ export function useChat() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   ), []);
 
-  // 1. Initial Fetch (Run exactly once on mount)
+  // 1. Initial Fetch on Mount & Auth State Change
   useEffect(() => {
     let mounted = true;
     
@@ -33,15 +33,6 @@ export function useChat() {
       console.log('--- Fetching Chat Messages (Last 100) ---');
       setIsLoading(true);
       
-      // CRITICAL FIX: Ensure the session is ready before fetching. 
-      // Next.js App Router might take a split second to hydrate the cookie into the client auth state.
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.warn("No user session found. Waiting for auth state change or skipping fetch.");
-        if (mounted) setIsLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from('chat_messages')
         .select(`
@@ -65,8 +56,32 @@ export function useChat() {
       if (mounted) setIsLoading(false);
     };
 
-    fetchMessages();
-    return () => { mounted = false; };
+    // Listen for auth state changes. When the session is ready (or user logs in), fetch messages.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Chat Auth State Changed:', event, session?.user?.id);
+      if (session?.user && mounted) {
+        fetchMessages();
+      } else if (!session && mounted) {
+        // If logged out, clear messages and stop loading
+        setMessages([]);
+        setIsLoading(false);
+      }
+    });
+
+    // Subscriptions run immediately upon attachment if a session exists in some clients, 
+    // but to be perfectly safe, we also trigger an initial check.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && mounted) {
+        fetchMessages();
+      } else if (!session && mounted) {
+        setIsLoading(false);
+      }
+    });
+
+    return () => { 
+      mounted = false; 
+      subscription.unsubscribe();
+    };
   }, [supabase]);
 
   // 2. Realtime Subscription (Run exactly once on mount)
