@@ -39,8 +39,7 @@ export function useChat() {
           id, user_id, message, image_url, created_at, is_edited, is_deleted,
           profiles (full_name, role, is_chat_blocked)
         `)
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching chat messages:', error);
