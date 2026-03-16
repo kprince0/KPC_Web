@@ -45,10 +45,17 @@ export function useChat() {
         console.error('Error fetching chat messages:', error);
       } else if (data && mounted) {
         console.log(`Fetched ${data.length} messages successfully.`);
-        const formattedData: ChatMessage[] = data.map(item => ({
-          ...item,
-          profiles: item.profiles || { full_name: '알 수 없음', role: 'Guest', is_chat_blocked: false }
-        })) as unknown as ChatMessage[];
+        const formattedData: ChatMessage[] = data.map(item => {
+          const prof = item.profiles as any;
+          return {
+            ...item,
+            profiles: {
+              full_name: prof?.full_name || '알 수 없음',
+              role: prof?.role || 'Guest',
+              is_chat_blocked: prof?.is_chat_blocked || false
+            }
+          };
+        }) as unknown as ChatMessage[];
         
         setMessages(formattedData.reverse());
       }
@@ -106,7 +113,11 @@ export function useChat() {
 
               const newMessage: ChatMessage = {
                 ...(payload.new as ChatMessage),
-                profiles: profileData || { full_name: 'Unknown', role: 'Guest', is_chat_blocked: false }
+                profiles: {
+                  full_name: profileData?.full_name || '알 수 없음',
+                  role: profileData?.role || 'Guest',
+                  is_chat_blocked: profileData?.is_chat_blocked || false
+                }
               };
               setMessages((prev) => [...prev, newMessage]);
             } catch (err) {
