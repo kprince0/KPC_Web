@@ -136,28 +136,7 @@ export default function Home() {
             예수 그리스도의 은혜와 진리가 머무는 곳, 잭슨빌 한인 장로교회에 오신 것을 환영합니다.
           </p>
           
-          {/* 3D Glow CTA Buttons */}
-          <div className="hero-text flex flex-col sm:flex-row gap-6 w-full justify-center">
-            
-            <Link
-              href="/about" // 예배 시간 안내 페이지로 나중에 변경 가능
-              className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-white/10 border border-white/20 text-white rounded-2xl font-bold text-lg backdrop-blur-xl transition-all duration-300 hover:bg-white/20 hover:border-white/40 hover:scale-105 active:scale-95 shadow-[0_0_40px_-10px_rgba(139,92,246,0)] hover:shadow-[0_0_40px_-10px_rgba(139,92,246,0.6)]"
-            >
-              <CalendarDays className="w-5 h-5 text-indigo-300" />
-              <span>예배 시간 확인하기</span>
-              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300 rounded-2xl"></div>
-            </Link>
 
-            <Link
-              href="/about"
-              className="group relative flex items-center justify-center gap-3 px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 border border-indigo-400/30 text-white rounded-2xl font-bold text-lg shadow-xl shadow-indigo-900/50 transition-all duration-300 hover:scale-105 hover:shadow-indigo-500/50 hover:brightness-110 active:scale-95"
-            >
-              <UserPlus className="w-5 h-5" />
-              <span>새가족 등록 안내</span>
-              <div className="absolute inset-0 -z-10 rounded-2xl ring-2 ring-indigo-400/50 scale-100 opacity-0 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500"></div>
-            </Link>
-
-          </div>
         </div>
 
         {/* Scroll Indicator */}
