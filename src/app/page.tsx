@@ -7,6 +7,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { ChevronDown, CalendarDays, UserPlus } from 'lucide-react';
 import { createBrowserClient } from '@supabase/ssr';
+import YouTubeBackground from '@/components/YouTubeBackground';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -111,21 +112,14 @@ export default function Home() {
       <section ref={heroRef} className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden">
         
         {/* Background Video (Cinematic Worship/Church Loop) */}
-        <div className="absolute inset-0 z-0 w-full h-full">
-          {/* Note: Replace with actual church cinematic video URL */}
-          <video 
-            autoPlay 
-            loop 
-            muted 
-            playsInline 
-            className="object-cover w-full h-full scale-105"
-            poster="https://static.wixstatic.com/media/cf5cc585-8d82-4c9f-bd94-35b77fd7aecf.jpg"
-          >
-            {/* Google Cloud 샘플 영상 (접속 차단이 없는 안전한 테스트용 링크) */}
-            <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4" />
-          </video>
+        <div className="absolute inset-0 z-0 w-full h-full overflow-hidden">
+          <YouTubeBackground 
+            videoId="bjgPX38Kivw" 
+            startSeconds={39668} 
+            endSeconds={39678} 
+          />
           {/* Dark Overlay for Readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-neutral-950 backdrop-blur-[2px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-neutral-950 backdrop-blur-[2px]"></div>
         </div>
 
         {/* Hero Content */}
