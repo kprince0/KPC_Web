@@ -121,7 +121,8 @@ export default function Home() {
             className="object-cover w-full h-full scale-105"
             poster="https://static.wixstatic.com/media/cf5cc585-8d82-4c9f-bd94-35b77fd7aecf.jpg"
           >
-            <source src="https://videos.pexels.com/video-files/8563380/8563380-hd_1920_1080_30fps.mp4" type="video/mp4" />
+            {/* Google Cloud 샘플 영상 (접속 차단이 없는 안전한 테스트용 링크) */}
+            <source src="https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" type="video/mp4" />
           </video>
           {/* Dark Overlay for Readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-neutral-950 backdrop-blur-[2px]"></div>
