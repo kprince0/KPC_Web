@@ -43,12 +43,10 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
           <li className="flex-shrink-0"><Link href="/sermons" className="hover:text-white transition-colors">설교</Link></li>
           <li className="flex-shrink-0"><Link href="/bulletins" className="hover:text-white transition-colors">주보</Link></li>
           <li className="flex-shrink-0"><Link href="/board" className="hover:text-white transition-colors">자유게시판</Link></li>
+          <li className="flex-shrink-0"><Link href="/photos" className="hover:text-white transition-colors">사진</Link></li>
           
           {isLoggedIn && (
-            <>
-              <li className="flex-shrink-0"><Link href="/chat" className="hover:text-white transition-colors">채팅방</Link></li>
-              <li className="flex-shrink-0"><Link href="/photos" className="hover:text-white transition-colors">사진</Link></li>
-            </>
+            <li className="flex-shrink-0"><Link href="/chat" className="hover:text-white transition-colors">채팅방</Link></li>
           )}
 
           {isAdmin && (
