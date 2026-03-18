@@ -115,8 +115,8 @@ export default function Home() {
         <div className="absolute inset-0 z-0 w-full h-full overflow-hidden">
           <YouTubeBackground 
             videoId="bjgPX38Kivw" 
-            startSeconds={39668} 
-            endSeconds={39678} 
+            startSeconds={3668} 
+            endSeconds={3678} 
           />
           {/* Dark Overlay for Readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-neutral-950 backdrop-blur-[2px]"></div>
