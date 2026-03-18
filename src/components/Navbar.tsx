@@ -31,22 +31,31 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-neutral-950/80 border-b border-white/10 backdrop-blur-xl py-4' : 'bg-neutral-950/40 backdrop-blur-md py-6'}`}>
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         <Link href="/" className="flex-shrink-0 flex items-center gap-2">
-          <img 
-            src="https://static.wixstatic.com/media/61d770_4fa2366d7d314c91999da3acaa6551be~mv2.jpg/v1/fill/w_120,h_73,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/NEW%20LOGO%20Only%20no%20Text.jpg" 
+          <img
+            src="https://static.wixstatic.com/media/61d770_4fa2366d7d314c91999da3acaa6551be~mv2.jpg/v1/fill/w_120,h_73,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/NEW%20LOGO%20Only%20no%20Text.jpg"
             alt="Jacksonville Korean Presbyterian Church Logo"
             className="h-10 w-auto object-contain brightness-110"
           />
         </Link>
-        
+
         <ul className="flex items-center gap-4 md:gap-6 text-sm font-medium text-neutral-300 whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <li className="flex-shrink-0"><Link href="/about" className="hover:text-white transition-colors">교회소개</Link></li>
           <li className="flex-shrink-0"><Link href="/sermons" className="hover:text-white transition-colors">설교</Link></li>
           <li className="flex-shrink-0"><Link href="/bulletins" className="hover:text-white transition-colors">주보</Link></li>
           <li className="flex-shrink-0"><Link href="/board" className="hover:text-white transition-colors">자유게시판</Link></li>
           <li className="flex-shrink-0"><Link href="/photos" className="hover:text-white transition-colors">사진</Link></li>
-          
+
           {isLoggedIn && (
-            <li className="flex-shrink-0"><Link href="/chat" className="hover:text-white transition-colors">채팅방</Link></li>
+            <li className="flex-shrink-0">
+              <Link
+                href="https://chat.google.com/u/5/app/chat/AAQA3N7Hs94"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-white transition-colors"
+              >
+                채팅방
+              </Link>
+            </li>
           )}
 
           {isAdmin && (
