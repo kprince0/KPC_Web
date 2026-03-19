@@ -14,15 +14,21 @@ export async function GET(
 
     const driveResponse = await getDriveFileStreaming(id);
     
-    // Determine content type from Drive response headers if possible, 
-    // otherwise fallback to a generic binary type or let the browser guess.
-    const contentType = driveResponse.headers['content-type'] || 'application/octet-stream';
+    // 1. Force valid content-type logic
+    const headersRaw = driveResponse.headers;
+    let rawContentType = headersRaw['content-type'] || headersRaw['Content-Type'];
+    let contentType = Array.isArray(rawContentType) ? rawContentType[0] : rawContentType;
+    
+    if (!contentType || contentType === 'application/octet-stream') {
+      // Since all uploaded files so far are PDFs or images, default to PDF for safety or guess from metadata
+      contentType = 'application/pdf';
+    }
 
-    // Return the stream as a standard web Response
+    // 2. Set Content-Disposition to inline to force browser rendering instead of downloading
     return new NextResponse(driveResponse.data as any, {
       headers: {
         'Content-Type': contentType,
-        // Cache control to improve performance for static assets like photos/pdfs
+        'Content-Disposition': 'inline', 
         'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
       },
     });
