@@ -77,27 +77,7 @@ export default function PhotoBoard({ photos, isAdmin = false }: { photos: Photo[
               onClick={() => setSelectedIdx(i)}
             />
             
-            {/* Admin Action: Edit & Delete */}
-            {isAdmin && photo.postId && (
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-2">
-                <Link 
-                  href={`/photos/edit/${photo.postId}`}
-                  className="p-2 bg-indigo-500/80 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow-lg flex items-center justify-center"
-                  title="사진/설명 수정"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <PenSquare className="w-4 h-4" />
-                </Link>
-                <div onClick={(e) => e.stopPropagation()}>
-                  <DeleteButton 
-                    postId={photo.postId} 
-                    tableName="photo_posts" 
-                    redirectPath="/photos" 
-                  />
-                </div>
-              </div>
-            )}
-
+            {/* No longer needed here as AlbumBoard handles edit/delete per album */}
             {/* Title Overlay */}
             <div 
               className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"
