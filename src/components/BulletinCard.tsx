@@ -3,7 +3,7 @@
 import { useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { FileText, Download } from 'lucide-react';
+import { FileText, Download, PenSquare } from 'lucide-react';
 import DeleteButton from './DeleteButton';
 import Link from 'next/link';
 
@@ -86,12 +86,19 @@ export default function BulletinCard({ id, title, date, thumbnailUrl, fileUrl, i
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           
-          {/* Admin Delete Action */}
+          {/* Admin Edit/Delete Actions */}
           {isAdmin && id && (
             <div 
-              className="absolute top-4 left-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity"
+              className="absolute top-4 left-4 z-30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2"
               onClick={(e) => e.stopPropagation()}
             >
+              <Link 
+                href={`/bulletins/edit/${id}`}
+                className="p-2 bg-indigo-500/80 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow-lg"
+                title="주보 수정"
+              >
+                <PenSquare className="w-4 h-4" />
+              </Link>
               <DeleteButton postId={id} tableName="bulletins" redirectPath="/bulletins" />
             </div>
           )}

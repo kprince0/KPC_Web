@@ -2,7 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
-import { X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, PenSquare } from 'lucide-react';
+import Link from 'next/link';
 import DeleteButton from './DeleteButton';
 
 interface Photo {
@@ -76,14 +77,24 @@ export default function PhotoBoard({ photos, isAdmin = false }: { photos: Photo[
               onClick={() => setSelectedIdx(i)}
             />
             
-            {/* Admin Action: Delete */}
+            {/* Admin Action: Edit & Delete */}
             {isAdmin && photo.postId && (
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                <DeleteButton 
-                  postId={photo.postId} 
-                  tableName="photo_posts" 
-                  redirectPath="/photos" 
-                />
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center gap-2">
+                <Link 
+                  href={`/photos/edit/${photo.postId}`}
+                  className="p-2 bg-indigo-500/80 hover:bg-indigo-500 text-white rounded-lg transition-colors shadow-lg flex items-center justify-center"
+                  title="사진/설명 수정"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <PenSquare className="w-4 h-4" />
+                </Link>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DeleteButton 
+                    postId={photo.postId} 
+                    tableName="photo_posts" 
+                    redirectPath="/photos" 
+                  />
+                </div>
               </div>
             )}
 

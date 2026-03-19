@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
-import { ArrowLeft, FileText, Download, ExternalLink } from 'lucide-react';
+import { ArrowLeft, FileText, Download, ExternalLink, PenSquare } from 'lucide-react';
 import DeleteButton from '@/components/DeleteButton';
 
 dayjs.locale('ko');
@@ -86,11 +86,20 @@ export default async function PostDetailPage({ params }: Props) {
                 <span>조회 {(post.view_count || 0) + 1}</span>
               </div>
               {canDelete && (
-                <DeleteButton 
-                  postId={id} 
-                  tableName="free_board_posts" 
-                  redirectPath="/board" 
-                />
+                <div className="flex items-center gap-2">
+                  <Link 
+                    href={`/board/edit/${id}`}
+                    className="p-2 text-neutral-400 hover:text-indigo-400 hover:bg-indigo-400/10 rounded-lg transition-colors"
+                    title="게시글 수정"
+                  >
+                    <PenSquare className="w-5 h-5" />
+                  </Link>
+                  <DeleteButton 
+                    postId={id} 
+                    tableName="free_board_posts" 
+                    redirectPath="/board" 
+                  />
+                </div>
               )}
             </div>
           </div>

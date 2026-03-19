@@ -3,7 +3,8 @@ import { cookies } from 'next/headers';
 import SermonPlayer from '@/components/SermonPlayer';
 import AdminSermonUpload from '@/components/AdminSermonUpload';
 import Link from 'next/link';
-import { Video } from 'lucide-react';
+import { Video, PenSquare } from 'lucide-react';
+import DeleteButton from '@/components/DeleteButton';
 
 export default async function SermonsPage() {
   const cookieStore = await cookies();
@@ -50,19 +51,34 @@ export default async function SermonsPage() {
         {sermons && sermons.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sermons.map((sermon) => (
-              <div key={sermon.id} className="bg-neutral-900/40 border border-white/10 rounded-2xl overflow-hidden shadow-xl hover:border-white/20 transition-all p-4">
+              <div key={sermon.id} className="bg-neutral-900/40 border border-white/10 rounded-2xl overflow-hidden shadow-xl hover:border-white/20 transition-all flex flex-col h-full">
                 <SermonPlayer 
                   youtubeId={sermon.youtube_id || ''} 
                   thumbnailUrl={sermon.thumbnail_url || `https://img.youtube.com/vi/${sermon.youtube_id}/maxresdefault.jpg`}
                   title={sermon.title}
                 />
-                <div className="mt-4">
-                  <h3 className="text-xl font-bold mb-1 truncate">{sermon.title}</h3>
-                  <div className="flex justify-between items-center text-sm text-neutral-400">
-                    <span>{sermon.preacher} 목사</span>
-                    <span>{sermon.sermon_date}</span>
+                <div className="p-4 flex flex-col justify-between flex-1 bg-neutral-900/80">
+                  <div>
+                    <h3 className="text-xl font-bold mb-1 truncate">{sermon.title}</h3>
+                    <div className="flex justify-between items-center text-sm text-neutral-400">
+                      <span>{sermon.preacher} 목사</span>
+                      <span>{sermon.sermon_date}</span>
+                    </div>
+                    <p className="text-xs text-neutral-500 mt-2 italic">{sermon.scripture}</p>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-2 italic">{sermon.scripture}</p>
+                  
+                  {isAdmin && (
+                    <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-end gap-2">
+                       <Link 
+                          href={`/sermons/edit/${sermon.id}`}
+                          className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors"
+                          title="설교 수정"
+                       >
+                         <PenSquare className="w-4 h-4" />
+                       </Link>
+                       <DeleteButton postId={sermon.id} tableName="sermons" redirectPath="/sermons" />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -3,8 +3,10 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Calendar, BellRing } from 'lucide-react';
+import { Calendar, BellRing, PenSquare } from 'lucide-react';
 import { format } from 'date-fns';
+import Link from 'next/link';
+import DeleteButton from './DeleteButton';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -15,7 +17,7 @@ interface NoticeItem {
   notice_date: string;
 }
 
-export default function NoticesList({ notices }: { notices: NoticeItem[] }) {
+export default function NoticesList({ notices, isAdmin = false }: { notices: NoticeItem[], isAdmin?: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -72,11 +74,26 @@ export default function NoticesList({ notices }: { notices: NoticeItem[] }) {
                 <div className={`w-full md:w-[45%] ${!isEven ? 'md:order-3' : 'md:order-1'}`}>
                   <div className={`p-6 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg transition-transform duration-300 hover:-translate-y-1 hover:border-indigo-500/30 ${!isEven ? 'md:bg-indigo-950/20' : ''}`}>
                     
-                    <div className="flex items-center gap-2 mb-3">
-                      <Calendar className="w-4 h-4 text-indigo-400" />
-                      <span className="text-xs font-semibold tracking-wider text-indigo-300 uppercase">
-                        {format(new Date(notice.notice_date), 'MMM dd, yyyy')}
-                      </span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-indigo-400" />
+                        <span className="text-xs font-semibold tracking-wider text-indigo-300 uppercase">
+                          {format(new Date(notice.notice_date), 'MMM dd, yyyy')}
+                        </span>
+                      </div>
+                      
+                      {isAdmin && (
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Link 
+                            href={`/notice/edit/${notice.id}`}
+                            className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 rounded-lg transition-colors"
+                            title="공지 수정"
+                          >
+                            <PenSquare className="w-4 h-4" />
+                          </Link>
+                          <DeleteButton postId={notice.id} tableName="notices" redirectPath="/notice" />
+                        </div>
+                      )}
                     </div>
 
                     <h2 className="text-xl font-medium text-white mb-4 group-hover:text-indigo-400 transition-colors">
