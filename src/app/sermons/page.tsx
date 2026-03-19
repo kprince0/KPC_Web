@@ -52,11 +52,13 @@ export default async function SermonsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sermons.map((sermon) => (
               <div key={sermon.id} className="bg-neutral-900/40 border border-white/10 rounded-2xl overflow-hidden shadow-xl hover:border-white/20 transition-all flex flex-col h-full">
-                <SermonPlayer 
-                  youtubeId={sermon.youtube_id || ''} 
-                  thumbnailUrl={sermon.thumbnail_url || `https://img.youtube.com/vi/${sermon.youtube_id}/maxresdefault.jpg`}
-                  title={sermon.title}
-                />
+                <div suppressHydrationWarning>
+                  <SermonPlayer 
+                    youtubeId={sermon.youtube_id || ''} 
+                    thumbnailUrl={sermon.thumbnail_url || `https://img.youtube.com/vi/${sermon.youtube_id}/maxresdefault.jpg`}
+                    title={sermon.title}
+                  />
+                </div>
                 <div className="p-4 flex flex-col justify-between flex-1 bg-neutral-900/80">
                   <div>
                     <h3 className="text-xl font-bold mb-1 truncate">{sermon.title}</h3>
