@@ -13,11 +13,12 @@ export default async function BulletinsPage() {
   );
 
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
 
   let userRole = 'Guest';
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (profile) userRole = profile.role;
+  if (user) {
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile) userRole = profile.role;
+  }
 
   const isAdmin = ['Admin', 'Pastor', 'Elder', 'MediaTeam', 'Deacon'].includes(userRole);
 
