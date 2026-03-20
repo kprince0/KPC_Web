@@ -28,17 +28,51 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
   }, [])
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-neutral-950/80 border-b border-white/10 backdrop-blur-xl py-4' : 'bg-neutral-950/40 backdrop-blur-md py-6'}`}>
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        <Link href="/" className="flex-shrink-0 flex items-center gap-2">
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-neutral-950/80 border-b border-white/10 backdrop-blur-xl py-3 md:py-4' : 'bg-neutral-950/40 backdrop-blur-md py-4 md:py-6'}`}>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-3 md:gap-y-0">
+        
+        {/* 1. Logo (Always left) */}
+        <Link href="/" className="flex-shrink-0 flex items-center gap-2 order-1">
           <img
             src="https://static.wixstatic.com/media/61d770_4fa2366d7d314c91999da3acaa6551be~mv2.jpg/v1/fill/w_120,h_73,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/NEW%20LOGO%20Only%20no%20Text.jpg"
             alt="Jacksonville Korean Presbyterian Church Logo"
-            className="h-10 w-auto object-contain brightness-110"
+            className="h-8 md:h-10 w-auto object-contain brightness-110"
           />
         </Link>
 
-        <ul className="flex items-center gap-4 md:gap-6 text-sm font-medium text-neutral-300 whitespace-nowrap overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+        {/* 3. Role / Login Actions (Mobile: Top Right, Desktop: Far Right) */}
+        <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 order-2 md:order-3">
+          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-xs px-2.5 md:px-3 py-1 md:py-1.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 backdrop-blur-md shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+            <span className="font-semibold tracking-wide">Role: {userRole}</span>
+          </div>
+          {!isLoggedIn ? (
+            <Link
+              href="/login"
+              className="text-xs md:text-sm px-4 md:px-5 py-1.5 md:py-2 rounded-full bg-white text-black font-semibold hover:bg-neutral-200 transition-colors hover:scale-105 active:scale-95 duration-200 block text-center"
+            >
+              로그인
+            </Link>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/mypage"
+                className="text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-white text-black font-semibold hover:bg-neutral-200 transition-colors hover:scale-105 active:scale-95 duration-200 block text-center"
+              >
+                마이페이지
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 font-semibold hover:bg-red-500/20 transition-colors hover:scale-105 active:scale-95 duration-200"
+              >
+                로그아웃
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 2. Navigation Links (Mobile: Full Width Bottom Row, Desktop: Center Row) */}
+        <ul className="flex items-center justify-start md:justify-center gap-5 md:gap-6 text-sm font-medium text-neutral-300 whitespace-nowrap overflow-x-auto w-full md:w-auto order-3 md:order-2 pb-1 md:pb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
           <li className="flex-shrink-0"><Link href="/about" className="hover:text-white transition-colors">교회소개</Link></li>
           <li className="flex-shrink-0"><Link href="/sermons" className="hover:text-white transition-colors">설교</Link></li>
           <li className="flex-shrink-0"><Link href="/bulletins" className="hover:text-white transition-colors">주보</Link></li>
@@ -67,35 +101,6 @@ export default function Navbar({ userRole = 'Guest' }: { userRole?: string }) {
           )}
         </ul>
 
-        <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-          <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 backdrop-blur-md shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-            <span className="font-semibold tracking-wide">Role: {userRole}</span>
-          </div>
-          {!isLoggedIn ? (
-            <Link
-              href="/login"
-              className="text-sm px-5 py-2 rounded-full bg-white text-black font-semibold hover:bg-neutral-200 transition-colors hover:scale-105 active:scale-95 duration-200 block text-center"
-            >
-              로그인
-            </Link>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/mypage"
-                className="text-sm px-4 py-2 rounded-full bg-white text-black font-semibold hover:bg-neutral-200 transition-colors hover:scale-105 active:scale-95 duration-200 block text-center"
-              >
-                마이페이지
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="text-sm px-4 py-2 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 font-semibold hover:bg-red-500/20 transition-colors hover:scale-105 active:scale-95 duration-200"
-              >
-                로그아웃
-              </button>
-            </div>
-          )}
-        </div>
       </div>
     </nav>
   )
