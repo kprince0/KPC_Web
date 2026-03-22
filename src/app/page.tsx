@@ -220,11 +220,18 @@ export default function Home() {
         <div className="text-center mb-12">
           <p className="text-sm font-bold tracking-[0.3em] uppercase text-indigo-400 mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.8)]">Location</p>
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">오시는 길</h2>
-          <p className="text-neutral-300 text-lg md:text-xl font-medium tracking-wide mb-4">
-            <span className="text-indigo-400 mr-2">📞</span> 904-355-9793 <br className="md:hidden" />
+          <div className="flex flex-col md:flex-row items-center justify-center text-neutral-300 text-lg md:text-xl font-medium tracking-wide mb-6 gap-4 md:gap-0">
+            <div>
+              <span className="text-indigo-400 mr-2">📞</span> 904-355-9793
+            </div>
             <span className="hidden md:inline mx-4 text-white/20">|</span>
-            <span className="text-indigo-400 mr-2">✉️</span> kangil.kim@jaxkpc.org
-          </p>
+            <a 
+              href="mailto:kangil.kim@jaxkpc.org" 
+              className="inline-flex items-center justify-center bg-white/5 hover:bg-indigo-600/30 text-white px-6 py-2.5 rounded-full border border-white/10 hover:border-indigo-500/50 transition-all active:scale-95 text-base shadow-sm"
+            >
+              <span className="text-indigo-400 mr-2">✉️</span> 이메일
+            </a>
+          </div>>
           <p className="text-neutral-300 text-lg md:text-xl font-medium tracking-wide">
             856 Margaret St. <br className="md:hidden" />
             <span className="hidden md:inline">, </span>
