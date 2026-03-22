@@ -15,6 +15,7 @@ export default function Home() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<HTMLDivElement>(null);
   
   const [cardsData, setCardsData] = useState({
     vision_title: "우리의 비전",
@@ -84,6 +85,24 @@ export default function Home() {
             ease: 'power3.out',
             scrollTrigger: {
               trigger: cardsRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse'
+            }
+          }
+        );
+      }
+
+      // Scroll Animation for Map Section
+      if (mapRef.current) {
+        gsap.fromTo(mapRef.current,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 1,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: mapRef.current,
               start: 'top 85%',
               toggleActions: 'play none none reverse'
             }
@@ -194,6 +213,33 @@ export default function Home() {
           ))}
         </div>
 
+      </section>
+
+      {/* 3. Location & Google Map Section */}
+      <section ref={mapRef} className="relative z-10 w-full max-w-7xl mx-auto px-6 py-24 flex flex-col items-center">
+        <div className="text-center mb-12">
+          <p className="text-sm font-bold tracking-[0.3em] uppercase text-indigo-400 mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.8)]">Location</p>
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">오시는 길</h2>
+          <p className="text-neutral-300 text-lg md:text-xl font-medium tracking-wide">
+            856 Margaret St. <br />
+            Jacksonville, FL 32256
+          </p>
+        </div>
+
+        <div className="w-full max-w-5xl rounded-[2rem] overflow-hidden border border-white/10 bg-neutral-900 shadow-2xl relative group">
+          <div className="absolute inset-0 border-2 border-transparent group-hover:border-indigo-500/50 transition-colors duration-700 pointer-events-none rounded-[2rem] z-10"></div>
+          {/* Google Maps Embed */}
+          <iframe
+            src="https://maps.google.com/maps?q=856%20Margaret%20St,%20Jacksonville,%20FL%2032256&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen={false}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="w-full h-[400px] md:h-[500px]"
+          ></iframe>
+        </div>
       </section>
 
     </main>
