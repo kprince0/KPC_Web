@@ -220,8 +220,14 @@ export default function Home() {
         <div className="text-center mb-12">
           <p className="text-sm font-bold tracking-[0.3em] uppercase text-indigo-400 mb-4 drop-shadow-[0_0_10px_rgba(99,102,241,0.8)]">Location</p>
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">오시는 길</h2>
+          <p className="text-neutral-300 text-lg md:text-xl font-medium tracking-wide mb-4">
+            <span className="text-indigo-400 mr-2">📞</span> 904-355-9793 <br className="md:hidden" />
+            <span className="hidden md:inline mx-4 text-white/20">|</span>
+            <span className="text-indigo-400 mr-2">✉️</span> kangil.kim@jaxkpc.org
+          </p>
           <p className="text-neutral-300 text-lg md:text-xl font-medium tracking-wide">
-            856 Margaret St. <br />
+            856 Margaret St. <br className="md:hidden" />
+            <span className="hidden md:inline">, </span>
             Jacksonville, FL 32256
           </p>
         </div>
