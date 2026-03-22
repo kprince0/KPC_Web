@@ -231,7 +231,7 @@ export default function Home() {
             >
               <span className="text-indigo-400 mr-2">✉️</span> 이메일
             </a>
-          </div>>
+          </div>
           <p className="text-neutral-300 text-lg md:text-xl font-medium tracking-wide">
             856 Margaret St. <br className="md:hidden" />
             <span className="hidden md:inline">, </span>
