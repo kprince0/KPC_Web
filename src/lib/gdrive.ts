@@ -75,3 +75,9 @@ export async function getDriveFileStreaming(fileId: string) {
     { responseType: 'stream' }
   );
 }
+
+export async function getDriveFileMetadata(fileId: string) {
+  const auth = getAuth();
+  const drive = google.drive({ version: 'v3', auth });
+  return await drive.files.get({ fileId, fields: 'mimeType, name' });
+}

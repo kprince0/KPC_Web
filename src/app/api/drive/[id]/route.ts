@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDriveFileStreaming } from '@/lib/gdrive';
+import { getDriveFileStreaming, getDriveFileMetadata } from '@/lib/gdrive';
 
 export async function GET(
   req: NextRequest,
@@ -18,16 +18,24 @@ export async function GET(
     const headersRaw = driveResponse.headers;
     let rawContentType = headersRaw['content-type'] || headersRaw['Content-Type'];
     let contentType = Array.isArray(rawContentType) ? rawContentType[0] : rawContentType;
-    
+
     if (!contentType || contentType === 'application/octet-stream') {
-      // Since all uploaded files so far are PDFs or images, default to PDF for safety or guess from metadata
-      contentType = 'application/pdf';
+      try {
+        const meta = await getDriveFileMetadata(id);
+        if (meta.data && meta.data.mimeType) {
+          contentType = meta.data.mimeType;
+        } else {
+          contentType = 'application/pdf';
+        }
+      } catch(e) {
+        contentType = 'application/pdf';
+      }
     }
 
     // 2. Set Content-Disposition to inline to force browser rendering instead of downloading
     return new NextResponse(driveResponse.data as any, {
       headers: {
-        'Content-Type': contentType,
+        'Content-Type': contentType as string,
         'Content-Disposition': 'inline', 
         'Cache-Control': 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800',
       },
