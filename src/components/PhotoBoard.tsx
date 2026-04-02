@@ -70,7 +70,7 @@ export default function PhotoBoard({ photos, isAdmin = false }: { photos: Photo[
             className="group relative rounded-2xl overflow-hidden cursor-pointer transform transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] break-inside-avoid shadow-lg"
           >
             <img 
-              src={photo.url} 
+              src={encodeURI(photo.url)} 
               alt={photo.alt} 
               className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
@@ -114,7 +114,7 @@ export default function PhotoBoard({ photos, isAdmin = false }: { photos: Photo[
 
             <img 
               ref={imageRef}
-              src={photos[selectedIdx].url} 
+              src={encodeURI(photos[selectedIdx].url)} 
               alt={photos[selectedIdx].alt}
               className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-white/5"
               onClick={(e) => e.stopPropagation()}

@@ -59,7 +59,7 @@ export default function AlbumBoard({ albums, isAdmin = false }: { albums: Album[
             className="group relative rounded-2xl overflow-hidden cursor-pointer bg-neutral-900 border border-white/5 hover:border-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_40px_-15px_rgba(99,102,241,0.3)] shadow-lg aspect-square"
           >
             <img 
-              src={coverImg} 
+              src={encodeURI(coverImg)} 
               alt={album.title} 
               className="absolute inset-0 w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
               loading="lazy"
